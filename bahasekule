@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAMUS BAHASE KULE</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Nunito', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts: Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Libraries for Export/Import -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.css"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- SheetJS for Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        body { font-family: 'Nunito', sans-serif; }
+        .hover-float:hover { transform: translateY(-4px); }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom Scrollbar for modals */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 min-h-screen text-slate-800 dark:text-slate-200">
+
+    <!-- GLOBAL LOADING SCREEN -->
+    <div id="globalLoader" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center text-white transition-opacity">
+        <i class="fa-solid fa-circle-notch fa-spin text-5xl mb-4 text-indigo-400"></i>
+        <p id="loaderText" class="text-lg font-semibold animate-pulse">Menghubungkan ke Server...</p>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-40 transition-colors">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <span class="font-bold text-xl hidden sm:block tracking-wide">BAHASE KULE</span>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="toggleDarkMode()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:inline"></i>
+                </button>
+                <button onclick="openLoginModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-md hover:shadow-lg">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>Admin
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header & Search -->
+    <header class="bg-gradient-to-b from-indigo-600 to-purple-700 text-white pt-12 pb-16 px-4 rounded-b-[2rem] sm:rounded-b-[3rem] shadow-lg mb-8">
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="text-3xl sm:text-5xl font-extrabold mb-3">KAMUS BAHASE KULE</h1>
+            <p class="text-indigo-100 text-lg sm:text-xl mb-6">Kamus Bahasa Jawa Cilegon Digital</p>
+            
+            <!-- Lencana Total Kata -->
+            <div class="inline-flex items-center bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold mb-6 shadow-sm">
+                <i class="fa-solid fa-book-bookmark mr-2 text-indigo-100"></i>
+                <span id="total-words-count">Memuat Data...</span>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="relative max-w-xl mx-auto shadow-2xl rounded-2xl">
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Cari kosa kata, makna, atau istilah..." 
+                    class="w-full px-6 py-4 rounded-2xl text-slate-800 text-lg focus:outline-none focus:ring-4 focus:ring-indigo-300 transition pl-14 placeholder-slate-400">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xl"></i>
+            </div>
+            
+            <button onclick="openSuggestModal()" class="mt-6 px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 rounded-xl transition font-semibold">
+                <i class="fa-solid fa-lightbulb text-yellow-300 mr-2"></i> Usulkan Kosakata Baru
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-5xl mx-auto px-4 pb-20">
+        <div id="status-message" class="text-center py-4 text-indigo-600 dark:text-indigo-400 font-semibold mb-2 h-8"></div>
+
+        <div class="flex overflow-x-auto hide-scroll gap-2 pb-4 mb-6 border-b border-slate-200 dark:border-slate-700" id="alphabet-container">
+            <!-- Render via JS -->
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="words-container">
+            <!-- Kata dirender ke sini (Maksimal 10) -->
+        </div>
+    </main>
+
+    <!-- MODAL: Detail Kata -->
+    <div id="detailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl transform scale-95 transition-transform">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white" id="detailWord">Kata</h2>
+                        <span class="inline-block mt-2 text-sm font-semibold px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 rounded-full" id="detailCategory">Kategori</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="playAudio()" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 transition">
+                            <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                        <button onclick="closeModal('detailModal')" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 rounded-full flex items-center justify-center transition">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="space-y-4 text-slate-700 dark:text-slate-300 mt-6">
+                    <div>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 font-semibold mb-1">Makna Kata</p>
+                        <p class="text-lg leading-relaxed bg-slate-50 dark:bg-slate-700/50 p-4 rounded-2xl" id="detailMeaning">Makna...</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-xs text-slate-500 font-semibold mb-1"><i class="fa-solid fa-equals text-green-500 mr-1"></i> Sinonim</p>
+                            <p class="text-sm bg-slate-50 dark:bg-slate-700/50 p-2 rounded-xl" id="detailSynonym">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500 font-semibold mb-1"><i class="fa-solid fa-not-equal text-red-500 mr-1"></i> Antonim</p>
+                            <p class="text-sm bg-slate-50 dark:bg-slate-700/50 p-2 rounded-xl" id="detailAntonym">-</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-slate-500 dark:text-slate-400 font-semibold mb-1"><i class="fa-solid fa-quote-left text-indigo-400 mr-1"></i> Contoh Kalimat</p>
+                        <div class="bg-indigo-50 dark:bg-indigo-900/30 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                            <p class="italic text-slate-700 dark:text-slate-300" id="detailExample">"Contoh"</p>
+                            <hr class="border-indigo-200 dark:border-indigo-800 my-2">
+                            <p class="text-sm font-medium text-slate-600 dark:text-slate-400" id="detailExampleTranslation">Arti contoh</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Usulkan Kosa Kata (USER) -->
+    <div id="suggestModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <h2 class="text-xl font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-lightbulb text-yellow-500 mr-2"></i> Usulkan Kosakata</h2>
+                <button onclick="closeModal('suggestModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <form id="suggestForm" onsubmit="handleUserSubmitSuggestion(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Kosa Kata Baru <span class="text-red-500">*</span></label>
+                            <input type="text" id="sug_word" required class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Kategori <span class="text-red-500">*</span></label>
+                            <select id="sug_category" required class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                                <option value="Nomina (Kata Benda)">Nomina (Kata Benda)</option>
+                                <option value="Verba (Kata Kerja)">Verba (Kata Kerja)</option>
+                                <option value="Adjektiva (Kata Sifat)">Adjektiva (Kata Sifat)</option>
+                                <option value="Adverbia (Kata Keterangan)">Adverbia (Kata Keterangan)</option>
+                                <option value="Pronomina (Kata Ganti)">Pronomina (Kata Ganti)</option>
+                                <option value="Istilah Khusus">Istilah Khusus</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Arti Kata <span class="text-red-500">*</span></label>
+                        <textarea id="sug_meaning" required rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Sinonim</label>
+                            <input type="text" id="sug_synonym" placeholder="Pisahkan dengan koma" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Antonim</label>
+                            <input type="text" id="sug_antonym" placeholder="Pisahkan dengan koma" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Contoh Kalimat</label>
+                            <textarea id="sug_example" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Arti Contoh Kalimat</label>
+                            <textarea id="sug_example_trans" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white"></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md">Kirim Usulan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Admin Login -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl w-full max-w-sm shadow-2xl relative">
+            <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-3">
+                    <i class="fa-solid fa-shield-halved text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Admin Akses</h2>
+            </div>
+            
+            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Username</label>
+                    <input type="text" id="username" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">Sandi</label>
+                    <input type="password" id="password" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md">Masuk</button>
+            </form>
+            <p class="text-xs text-center text-slate-400 mt-4">Kredensial bawaan: demo / demo</p>
+        </div>
+    </div>
+
+    <!-- MODAL: Admin Dashboard -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 rounded-t-3xl shrink-0">
+                <h2 class="text-2xl font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-cube text-indigo-500 mr-2"></i> Dashboard Admin</h2>
+                <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-semibold px-3 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
+                </button>
+            </div>
+
+            <div class="px-6 border-b border-slate-200 dark:border-slate-700 flex overflow-x-auto hide-scroll gap-4 shrink-0">
+                <button onclick="switchAdminTab('kelola')" id="tab-kelola" class="px-4 py-3 font-semibold text-indigo-600 border-b-2 border-indigo-600 whitespace-nowrap">Kelola Kamus</button>
+                <button onclick="switchAdminTab('usulan')" id="tab-usulan" class="px-4 py-3 font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
+                    Usulan Masuk <span id="usulan-badge" class="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
+                </button>
+                <button onclick="switchAdminTab('profil')" id="tab-profil" class="px-4 py-3 font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Profil Admin</button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 custom-scrollbar" id="adminContent">
+                <!-- TAB: Kelola Kamus -->
+                <div id="panel-kelola" class="block">
+                    <div class="flex flex-col sm:flex-row flex-wrap justify-between items-center mb-6 gap-3">
+                        <div class="relative w-full sm:w-64 shrink-0">
+                            <input type="text" id="adminSearch" oninput="renderAdminWords()" placeholder="Cari di database..." class="w-full px-4 py-2 pl-10 bg-slate-100 dark:bg-slate-700 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
+                            <button onclick="downloadExcelTemplate()" class="flex-1 sm:flex-none px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                                <i class="fa-solid fa-file-excel mr-1"></i> Template Excel
+                            </button>
+                            <input type="file" id="excelUpload" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUploadAction(event)">
+                            <button onclick="document.getElementById('excelUpload').click()" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                                <i class="fa-solid fa-upload mr-1"></i> Unggah Excel
+                            </button>
+                            <button onclick="exportToPDF()" class="flex-1 sm:flex-none px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                                <i class="fa-solid fa-file-pdf mr-1"></i> Unduh PDF
+                            </button>
+                            <button onclick="openFormModal()" class="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                                <i class="fa-solid fa-plus mr-1"></i> Tambah Kata
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                <tr>
+                                    <th class="p-4 font-bold">Kosa Kata</th>
+                                    <th class="p-4 font-bold">Kategori</th>
+                                    <th class="p-4 font-bold max-w-xs">Arti</th>
+                                    <th class="p-4 font-bold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/50 bg-white dark:bg-slate-800/50">
+                                <!-- Render tabel -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB: Usulan Masuk -->
+                <div id="panel-usulan" class="hidden">
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                <tr>
+                                    <th class="p-4 font-bold">Usulan Kata</th>
+                                    <th class="p-4 font-bold">Makna</th>
+                                    <th class="p-4 font-bold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suggestionTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/50 bg-white dark:bg-slate-800/50">
+                                <!-- Render Usulan -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB: Profil -->
+                <div id="panel-profil" class="hidden max-w-md mx-auto">
+                    <div class="bg-slate-50 dark:bg-slate-700/30 p-6 rounded-2xl border border-slate-200 dark:border-slate-600">
+                        <h3 class="text-lg font-bold mb-4">Pengaturan Akun Admin</h3>
+                        <form onsubmit="handleUpdateProfile(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold mb-1">Username Baru</label>
+                                <input type="text" id="prof_username" required class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold mb-1">Password Baru (Opsional)</label>
+                                <input type="password" id="prof_password" placeholder="Kosongkan jika tidak ingin diubah" class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl transition">Perbarui Profil & Relogin</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Form Input/Edit (Utama & Usulan Admin) -->
+    <div id="formModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <h2 class="text-xl font-bold" id="formTitle">Tambah Kata</h2>
+                <button onclick="closeModal('formModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar">
+                <form id="dataForm" onsubmit="handleAdminSaveData(event)" class="space-y-4">
+                    <input type="hidden" id="formId">
+                    <input type="hidden" id="formType" value="MAIN">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Kosa Kata <span class="text-red-500">*</span></label>
+                            <input type="text" id="inp_word" required class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Kategori <span class="text-red-500">*</span></label>
+                            <select id="inp_category" required class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                                <option value="Nomina (Kata Benda)">Nomina (Kata Benda)</option>
+                                <option value="Verba (Kata Kerja)">Verba (Kata Kerja)</option>
+                                <option value="Adjektiva (Kata Sifat)">Adjektiva (Kata Sifat)</option>
+                                <option value="Adverbia (Kata Keterangan)">Adverbia (Kata Keterangan)</option>
+                                <option value="Pronomina (Kata Ganti)">Pronomina (Kata Ganti)</option>
+                                <option value="Istilah Khusus">Istilah Khusus</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold mb-1">Arti Kata <span class="text-red-500">*</span></label>
+                        <textarea id="inp_meaning" required rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Sinonim</label>
+                            <input type="text" id="inp_synonym" placeholder="Pisahkan dengan koma" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Antonim</label>
+                            <input type="text" id="inp_antonym" placeholder="Pisahkan dengan koma" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Contoh Kalimat</label>
+                            <textarea id="inp_example" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold mb-1">Arti Contoh Kalimat</label>
+                            <textarea id="inp_example_trans" rows="2" class="w-full px-4 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl"></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md">Simpan Data</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ==============================================================
+         * PENTING: GANTI URL DI BAWAH INI DENGAN URL DEPLOY APPS SCRIPT ANDA
+         * ==============================================================
+         */
+        const API_URL = "https://script.google.com/macros/s/AKfycbytItw_UDSzb0NkzmRNOemPaNKemxqj-ToS1DyX6-Fw8PnYIyHSAAZfn-2rz0AmPJe2/exec"; // <-- GANTI INI
+
+        // State Data Lokal
+        let dictionaryData = []; 
+        let suggestionData = []; 
+        let searchTerm = '';
+        let currentFilter = 'ALL';
+        let currentAdminTab = 'kelola';
+
+        // --- FETCH WRAPPER (KOMUNIKASI KE GOOGLE APPS SCRIPT) ---
+        async function callAPI(action, payload = null, isGet = false, loadingMsg = "Memproses...") {
+            showLoading(loadingMsg);
+            try {
+                let url = API_URL;
+                let options = {
+                    redirect: "follow" // PENTING: Untuk mengatasi pengalihan (redirect) dari server Google
+                };
+                
+                if (isGet) {
+                    url += `?action=${action}`;
+                    options.method = "GET";
+                } else {
+                    // Pakai text/plain untuk mengakali batasan CORS preflight di Google GAS
+                    options.method = "POST";
+                    options.headers = { "Content-Type": "text/plain;charset=utf-8" };
+                    options.body = JSON.stringify({ action: action, payload: payload });
+                }
+                
+                const response = await fetch(url, options);
+                
+                if (!response.ok) {
+                    throw new Error(`Server API menolak akses (Status: ${response.status})`);
+                }
+                
+                const data = await response.json();
+                hideLoading();
+                return data;
+            } catch (error) {
+                hideLoading();
+                console.warn("Info (Mode Pratinjau): Koneksi API terputus. Menggunakan data simulasi. " + error.message);
+                
+                // === MODE TIRUAN / FALLBACK (Berjalan jika URL API belum valid) ===
+                // Ini memastikan layar pratinjau tidak blank saat Anda belum menaruh URL yang benar
+                if (action === 'getDictionaryData') {
+                    showCustomToast("Peringatan: API gagal dihubungi. Menggunakan data tiruan (Mock Mode).");
+                    return [
+                        { id: 'M1', word: 'Aje', category: 'Adverbia (Kata Keterangan)', meaning: 'Jangan', example: 'Aje mengkono!', synonym: '-', antonym: 'Gera', example_translation: 'Jangan begitu!' },
+                        { id: 'M2', word: 'Bengen', category: 'Nomina (Kata Benda)', meaning: 'Zaman dahulu / Dulu', example: 'Bengen mah kule sering mlayu.', synonym: 'Biyen', antonym: 'Sekien', example_translation: 'Dulu saya sering berlari.' },
+                        { id: 'M3', word: 'Sira', category: 'Pronomina (Kata Ganti)', meaning: 'Kamu (Halus)', example: 'Sira arep ning ndi?', synonym: '-', antonym: 'Kule', example_translation: 'Kamu mau ke mana?' }
+                    ];
+                }
+                if (action === 'getPendingSuggestions') {
+                    return [{ id: 'S1', word: 'Endas', category: 'Nomina (Kata Benda)', meaning: 'Kepala', example: '-', synonym: '-', antonym: '-', example_translation: '-' }];
+                }
+                if (action === 'loginAdmin') {
+                    showCustomToast("Mock Mode: Login simulasi berhasil karena API gagal dihubungi.");
+                    return { success: true, name: "Admin Offline" };
+                }
+                
+                showCustomToast("Gagal terhubung ke Server API. Pastikan URL benar.");
+                return null;
+            }
+        }
+
+        // --- SISTEM LOADING & UI ---
+        function showLoading(msg) {
+            document.getElementById('loaderText').innerText = msg;
+            document.getElementById('globalLoader').classList.remove('hidden');
+            document.getElementById('globalLoader').classList.add('flex');
+        }
+
+        function hideLoading() {
+            document.getElementById('globalLoader').classList.add('hidden');
+            document.getElementById('globalLoader').classList.remove('flex');
+        }
+
+        function showCustomToast(msg) {
+            const toast = document.getElementById('status-message');
+            toast.innerText = msg;
+            setTimeout(() => toast.innerText = '', 3000);
+        }
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('hidden');
+            setTimeout(() => el.classList.remove('opacity-0'), 10);
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            el.classList.add('opacity-0');
+            setTimeout(() => el.classList.add('hidden'), 300);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // --- INISIALISASI SAAT HALAMAN DIBUKA ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('theme') === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+            renderAlphabet();
+            
+            // Ambil data langsung dari Apps Script API
+            const data = await callAPI('getDictionaryData', null, true, "Memuat Data Kamus...");
+            if (data) {
+                dictionaryData = data;
+                renderWords();
+            }
+        });
+
+        // --- LOGIKA TAMPILAN USER ---
+        function renderAlphabet() {
+            const container = document.getElementById('alphabet-container');
+            const alphabets = ['ALL', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
+            
+            container.innerHTML = alphabets.map(letter => `
+                <button onclick="filterByAlphabet('${letter}')" 
+                    class="px-4 py-2 min-w-[2.5rem] text-sm font-bold rounded-xl transition shadow-sm border 
+                    ${currentFilter === letter 
+                        ? 'bg-indigo-600 text-white border-indigo-600' 
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'}">
+                    ${letter}
+                </button>
+            `).join('');
+        }
+
+        function filterByAlphabet(letter) {
+            currentFilter = letter;
+            renderAlphabet();
+            renderWords();
+        }
+
+        function handleSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            renderWords();
+        }
+
+        function renderWords(wordsToRender = null) {
+            const container = document.getElementById('words-container');
+            const countBadge = document.getElementById('total-words-count');
+            
+            let targetData = wordsToRender || dictionaryData;
+            
+            if (countBadge) {
+                countBadge.innerText = targetData.length + ' Kata Terdata';
+            }
+
+            let filtered = targetData;
+
+            if (searchTerm) {
+                filtered = filtered.filter(item => 
+                    item.word.toLowerCase().includes(searchTerm) || 
+                    item.meaning.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (currentFilter !== 'ALL') {
+                filtered = filtered.filter(item => item.word.toUpperCase().startsWith(currentFilter));
+            }
+
+            filtered.sort((a, b) => a.word.localeCompare(b.word));
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-10 text-slate-500 dark:text-slate-400"><i class="fa-solid fa-ghost text-4xl mb-3 text-slate-300 dark:text-slate-600"></i><p>Kosa kata tidak ditemukan.</p></div>';
+                return;
+            }
+
+            const limitedFiltered = filtered.slice(0, 10);
+
+            container.innerHTML = limitedFiltered.map(item => `
+                <div onclick="showDetail('${item.id}')" class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover-float hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition duration-300">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold text-slate-800 dark:text-white">${item.word}</h3>
+                        <span class="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full border border-indigo-100 dark:border-indigo-800/50">${item.category}</span>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-300 text-sm line-clamp-2">${item.meaning}</p>
+                </div>
+            `).join('');
+        }
+
+        function showDetail(id) {
+            const item = dictionaryData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('detailWord').innerText = item.word;
+            document.getElementById('detailCategory').innerText = item.category;
+            document.getElementById('detailMeaning').innerText = item.meaning;
+            document.getElementById('detailExample').innerText = item.example && item.example !== '-' ? `"${item.example}"` : 'Tidak ada contoh';
+            document.getElementById('detailExampleTranslation').innerText = item.example_translation && item.example_translation !== '-' ? item.example_translation : '';
+            document.getElementById('detailSynonym').innerText = item.synonym || '-';
+            document.getElementById('detailAntonym').innerText = item.antonym || '-';
+
+            openModal('detailModal');
+        }
+
+        function playAudio() {
+            const text = document.getElementById('detailWord').innerText;
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = 'id-ID';
+            window.speechSynthesis.speak(speech);
+        }
+
+        function openSuggestModal() {
+            document.getElementById('suggestForm').reset();
+            openModal('suggestModal');
+        }
+
+        // --- INTERAKSI API PENGGUNA (USER) ---
+        async function handleUserSubmitSuggestion(e) {
+            e.preventDefault();
+            const payload = {
+                word: document.getElementById('sug_word').value,
+                category: document.getElementById('sug_category').value,
+                meaning: document.getElementById('sug_meaning').value,
+                synonym: document.getElementById('sug_synonym').value || '-',
+                antonym: document.getElementById('sug_antonym').value || '-',
+                example: document.getElementById('sug_example').value || '-',
+                example_translation: document.getElementById('sug_example_trans').value || '-'
+            };
+            
+            const res = await callAPI('submitSuggestion', payload, false, "Mengirim Usulan...");
+            if (res && res.success) {
+                closeModal('suggestModal');
+                showCustomToast("Usulan berhasil dikirim! Menunggu verifikasi admin.");
+            }
+        }
+
+        // --- INTERAKSI API ADMIN ---
+        function openLoginModal() {
+            document.getElementById('loginForm').reset();
+            openModal('loginModal');
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const payload = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+            
+            const res = await callAPI('loginAdmin', payload, false, "Memverifikasi...");
+            
+            if (res && res.success) {
+                closeModal('loginModal');
+                openModal('adminModal');
+                document.getElementById('prof_username').value = payload.username;
+                
+                // Fetch usulan terbaru saat login berhasil
+                const sugData = await callAPI('getPendingSuggestions', null, true, "Memuat Dashboard...");
+                if (sugData) suggestionData = sugData;
+                
+                renderAdminWords();
+                renderSuggestions();
+            } else {
+                showCustomToast(res ? res.msg : "Username atau sandi salah!");
+            }
+        }
+
+        function handleLogout() {
+            closeModal('adminModal');
+            showCustomToast("Berhasil keluar.");
+        }
+
+        function switchAdminTab(tab) {
+            currentAdminTab = tab;
+            ['kelola', 'usulan', 'profil'].forEach(t => {
+                document.getElementById(`panel-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('text-indigo-600', 'border-b-2', 'border-indigo-600');
+                document.getElementById(`tab-${t}`).classList.add('text-slate-500');
+            });
+            
+            document.getElementById(`panel-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('text-indigo-600', 'border-b-2', 'border-indigo-600');
+            document.getElementById(`tab-${tab}`).classList.remove('text-slate-500');
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            const payload = {
+                oldUsername: document.getElementById('prof_username').value,
+                newUsername: document.getElementById('prof_username').value,
+                newPassword: document.getElementById('prof_password').value
+            };
+            
+            const res = await callAPI('updateAdminProfile', payload, false, "Memperbarui Profil...");
+            if (res && res.success) {
+                showCustomToast("Profil diperbarui. Silakan login ulang.");
+                handleLogout();
+            } else {
+                showCustomToast(res ? res.msg : "Gagal memperbarui profil.");
+            }
+        }
+
+        function renderAdminWords() {
+            const tbody = document.getElementById('adminTableBody');
+            const term = document.getElementById('adminSearch').value.toLowerCase();
+            
+            let filtered = dictionaryData;
+            if (term) {
+                filtered = filtered.filter(item => item.word.toLowerCase().includes(term) || item.meaning.toLowerCase().includes(term));
+            }
+
+            tbody.innerHTML = filtered.map(item => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                    <td class="p-4 font-semibold">${item.word}</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 rounded text-xs whitespace-nowrap">${item.category}</span></td>
+                    <td class="p-4 truncate max-w-[200px]" title="${item.meaning}">${item.meaning}</td>
+                    <td class="p-4 text-center whitespace-nowrap">
+                        <button onclick="openFormModal('${item.id}')" class="text-indigo-500 hover:text-indigo-700 mx-1"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="actionDeleteWord('${item.id}')" class="text-red-500 hover:text-red-700 mx-1"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderSuggestions() {
+            const tbody = document.getElementById('suggestionTableBody');
+            const badge = document.getElementById('usulan-badge');
+            
+            if (suggestionData.length > 0) {
+                badge.innerText = suggestionData.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            if (suggestionData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-500">Tidak ada usulan baru.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = suggestionData.map(item => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition">
+                    <td class="p-4 font-semibold">
+                        ${item.word} <br>
+                        <span class="text-xs text-slate-500 font-normal">${item.category}</span>
+                    </td>
+                    <td class="p-4 truncate max-w-[200px]" title="${item.meaning}">${item.meaning}</td>
+                    <td class="p-4 text-center whitespace-nowrap">
+                        <button onclick="actionApproveSuggestion('${item.id}')" class="text-emerald-500 hover:text-emerald-700 mx-1" title="Setujui"><i class="fa-solid fa-check-circle text-lg"></i></button>
+                        <button onclick="actionEditSuggestion('${item.id}')" class="text-blue-500 hover:text-blue-700 mx-1" title="Edit Usulan"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
+                        <button onclick="actionRejectSuggestion('${item.id}')" class="text-red-500 hover:text-red-700 mx-1" title="Tolak"><i class="fa-solid fa-xmark-circle text-lg"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openFormModal(id = null) {
+            document.getElementById('dataForm').reset();
+            document.getElementById('formType').value = 'MAIN';
+            
+            if (id) {
+                document.getElementById('formTitle').innerText = 'Edit Kata';
+                const item = dictionaryData.find(d => d.id === id);
+                if (item) {
+                    document.getElementById('formId').value = item.id;
+                    document.getElementById('inp_word').value = item.word;
+                    document.getElementById('inp_category').value = item.category;
+                    document.getElementById('inp_meaning').value = item.meaning;
+                    document.getElementById('inp_example').value = item.example !== '-' ? item.example : '';
+                    document.getElementById('inp_example_trans').value = item.example_translation !== '-' ? item.example_translation : '';
+                    document.getElementById('inp_synonym').value = item.synonym !== '-' ? item.synonym : '';
+                    document.getElementById('inp_antonym').value = item.antonym !== '-' ? item.antonym : '';
+                }
+            } else {
+                document.getElementById('formTitle').innerText = 'Tambah Kata';
+                document.getElementById('formId').value = '';
+            }
+            openModal('formModal');
+        }
+
+        function actionEditSuggestion(id) {
+            document.getElementById('dataForm').reset();
+            document.getElementById('formType').value = 'SUGGESTION';
+            document.getElementById('formTitle').innerText = 'Edit Usulan Pengguna';
+            
+            const item = suggestionData.find(d => d.id === id);
+            if (item) {
+                document.getElementById('formId').value = item.id;
+                document.getElementById('inp_word').value = item.word;
+                document.getElementById('inp_category').value = item.category;
+                document.getElementById('inp_meaning').value = item.meaning;
+                document.getElementById('inp_example').value = item.example !== '-' ? item.example : '';
+                document.getElementById('inp_example_trans').value = item.example_translation !== '-' ? item.example_translation : '';
+                document.getElementById('inp_synonym').value = item.synonym !== '-' ? item.synonym : '';
+                document.getElementById('inp_antonym').value = item.antonym !== '-' ? item.antonym : '';
+            }
+            openModal('formModal');
+        }
+
+        async function handleAdminSaveData(e) {
+            e.preventDefault();
+            const id = document.getElementById('formId').value;
+            const type = document.getElementById('formType').value;
+            
+            const payload = {
+                id: id || '',
+                word: document.getElementById('inp_word').value,
+                category: document.getElementById('inp_category').value,
+                meaning: document.getElementById('inp_meaning').value,
+                example: document.getElementById('inp_example').value || '-',
+                example_translation: document.getElementById('inp_example_trans').value || '-',
+                synonym: document.getElementById('inp_synonym').value || '-',
+                antonym: document.getElementById('inp_antonym').value || '-'
+            };
+
+            const endpoint = type === 'SUGGESTION' ? 'updateSuggestion' : 'saveWord';
+            const res = await callAPI(endpoint, payload, false, "Menyimpan Data...");
+            
+            if (res) {
+                if (type === 'SUGGESTION') {
+                    suggestionData = res;
+                    renderSuggestions();
+                    showCustomToast("Usulan berhasil diperbarui.");
+                } else {
+                    dictionaryData = res;
+                    renderAdminWords();
+                    renderWords();
+                    showCustomToast("Data kamus berhasil disimpan.");
+                }
+                closeModal('formModal');
+            }
+        }
+
+        async function actionDeleteWord(id) {
+            if(!confirm("Yakin ingin menghapus kata ini?")) return;
+            const res = await callAPI('deleteWord', { id: id }, false, "Menghapus...");
+            if (res) {
+                dictionaryData = res;
+                renderAdminWords();
+                renderWords();
+                showCustomToast("Kata berhasil dihapus.");
+            }
+        }
+
+        async function actionApproveSuggestion(id) {
+            const res = await callAPI('approveSuggestion', { id: id }, false, "Menyetujui Usulan...");
+            if (res) {
+                dictionaryData = res.mainData;
+                suggestionData = res.suggestions;
+                renderSuggestions();
+                renderAdminWords();
+                renderWords();
+                showCustomToast("Usulan disetujui & ditambahkan ke kamus utama!");
+            }
+        }
+
+        async function actionRejectSuggestion(id) {
+            if(!confirm("Tolak dan hapus usulan ini?")) return;
+            const res = await callAPI('rejectSuggestion', { id: id }, false, "Menghapus Usulan...");
+            if (res) {
+                suggestionData = res;
+                renderSuggestions();
+                showCustomToast("Usulan telah ditolak.");
+            }
+        }
+
+        // --- FITUR IMPORT/EXPORT (BERJALAN LOKAL) ---
+        function exportToPDF() {
+            showLoading("Menyiapkan PDF...");
+            setTimeout(() => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(16);
+                doc.text("Kamus Bahase Kule - Database", 14, 15);
+                doc.setFontSize(10);
+                doc.text("Diekspor pada: " + new Date().toLocaleDateString('id-ID'), 14, 22);
+
+                const tableData = dictionaryData.map(item => [
+                    item.word, item.category, item.meaning, item.synonym, item.antonym
+                ]);
+
+                doc.autoTable({
+                    head: [['Kosa Kata', 'Kategori', 'Arti', 'Sinonim', 'Antonim']],
+                    body: tableData,
+                    startY: 28,
+                    theme: 'grid',
+                    headStyles: { fillColor: [79, 70, 229] }
+                });
+
+                doc.save('Database_Kamus_Bahase_Kule.pdf');
+                hideLoading();
+                showCustomToast("PDF Berhasil Diunduh!");
+            }, 500);
+        }
+
+        function downloadExcelTemplate() {
+            const wsData = [
+                ["Kosa Kata", "Kategori", "Arti Kata", "Sinonim", "Antonim", "Contoh Kalimat", "Arti Contoh Kalimat"],
+                ["Jinggo", "Adjektiva (Kata Sifat)", "Sangat merah / Merah gelap", "-", "-", "Klambine werna jinggo", "Bajunya warna merah"]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Template_Kamus");
+            XLSX.writeFile(wb, "Template_Kamus_Upload.xlsx");
+        }
+
+        function handleExcelUploadAction(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            showLoading("Memproses Excel...");
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    
+                    if (rows.length > 1) {
+                        const newItems = [];
+                        for (let i = 1; i < rows.length; i++) {
+                            if (rows[i] && rows[i][0]) {
+                                newItems.push({
+                                    word: rows[i][0] || '',
+                                    category: rows[i][1] || 'Istilah Khusus',
+                                    meaning: rows[i][2] || '',
+                                    synonym: rows[i][3] || '-',
+                                    antonym: rows[i][4] || '-',
+                                    example: rows[i][5] || '-',
+                                    example_translation: rows[i][6] || '-'
+                                });
+                            }
+                        }
+                        
+                        // Kirim data batch (massal) ke server API
+                        const res = await callAPI('saveBulkWords', newItems, false, "Mengunggah Data ke Server...");
+                        if (res) {
+                            dictionaryData = res;
+                            renderAdminWords();
+                            renderWords();
+                            showCustomToast(`${newItems.length} kata berhasil diunggah!`);
+                        }
+                    } else {
+                        hideLoading();
+                        showCustomToast("Data Excel kosong atau tidak valid.");
+                    }
+                } catch (err) {
+                    hideLoading();
+                    showCustomToast("Gagal membaca Excel. Pastikan format sesuai template.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            event.target.value = ''; 
+        }
+    </script>
+</body>
+</html>
