@@ -415,7 +415,7 @@
          * PENTING: GANTI URL DI BAWAH INI DENGAN URL DEPLOY APPS SCRIPT ANDA
          * ==============================================================
          */
-        const API_URL = "https://script.google.com/macros/s/AKfycbytItw_UDSzb0NkzmRNOemPaNKemxqj-ToS1DyX6-Fw8PnYIyHSAAZfn-2rz0AmPJe2/exec"; // <-- GANTI INI
+        const API_URL = "https://script.google.com/macros/s/AKfycbz9zPnL8ZxNk6QFwhJR8tQv0J6V_lBYHmlWUo2WiYdcPpTofnetkiUBtRzDMGjTsKAC/exec"; // <-- GANTI INI DENGAN URL DEPLOY TERBARU
 
         // State Data Lokal
         let dictionaryData = []; 
@@ -430,14 +430,13 @@
             try {
                 let url = API_URL;
                 let options = {
-                    redirect: "follow" // PENTING: Untuk mengatasi pengalihan (redirect) dari server Google
+                    redirect: "follow" // PENTING: Untuk mengatasi pengalihan (redirect)
                 };
                 
                 if (isGet) {
                     url += `?action=${action}`;
                     options.method = "GET";
                 } else {
-                    // Pakai text/plain untuk mengakali batasan CORS preflight di Google GAS
                     options.method = "POST";
                     options.headers = { "Content-Type": "text/plain;charset=utf-8" };
                     options.body = JSON.stringify({ action: action, payload: payload });
@@ -456,8 +455,7 @@
                 hideLoading();
                 console.warn("Info (Mode Pratinjau): Koneksi API terputus. Menggunakan data simulasi. " + error.message);
                 
-                // === MODE TIRUAN / FALLBACK (Berjalan jika URL API belum valid) ===
-                // Ini memastikan layar pratinjau tidak blank saat Anda belum menaruh URL yang benar
+                // === MODE TIRUAN / FALLBACK ===
                 if (action === 'getDictionaryData') {
                     showCustomToast("Peringatan: API gagal dihubungi. Menggunakan data tiruan (Mock Mode).");
                     return [
@@ -494,7 +492,7 @@
         function showCustomToast(msg) {
             const toast = document.getElementById('status-message');
             toast.innerText = msg;
-            setTimeout(() => toast.innerText = '', 3000);
+            setTimeout(() => toast.innerText = '', 4000); // Diperpanjang jadi 4 detik agar pesan jelas terbaca
         }
 
         function openModal(id) {
@@ -830,6 +828,12 @@
             const res = await callAPI(endpoint, payload, false, "Menyimpan Data...");
             
             if (res) {
+                // TANGKAP ERROR DUPLIKASI DATA DARI BACKEND
+                if (res.error) {
+                    showCustomToast(res.msg);
+                    return; // Hentikan eksekusi, biarkan form tetap terbuka
+                }
+
                 if (type === 'SUGGESTION') {
                     suggestionData = res;
                     renderSuggestions();
@@ -858,6 +862,14 @@
         async function actionApproveSuggestion(id) {
             const res = await callAPI('approveSuggestion', { id: id }, false, "Menyetujui Usulan...");
             if (res) {
+                // TANGKAP ERROR JIKA KATA USULAN TERNYATA SUDAH ADA DI KAMUS
+                if (res.error) {
+                    suggestionData = res.suggestions;
+                    renderSuggestions();
+                    showCustomToast(res.msg);
+                    return; // Hentikan, usulan ditandai ditolak otomatis di server
+                }
+
                 dictionaryData = res.mainData;
                 suggestionData = res.suggestions;
                 renderSuggestions();
@@ -877,7 +889,7 @@
             }
         }
 
-        // --- FITUR IMPORT/EXPORT (BERJALAN LOKAL) ---
+        // --- FITUR IMPORT/EXPORT ---
         function exportToPDF() {
             showLoading("Menyiapkan PDF...");
             setTimeout(() => {
@@ -952,10 +964,19 @@
                         // Kirim data batch (massal) ke server API
                         const res = await callAPI('saveBulkWords', newItems, false, "Mengunggah Data ke Server...");
                         if (res) {
-                            dictionaryData = res;
-                            renderAdminWords();
-                            renderWords();
-                            showCustomToast(`${newItems.length} kata berhasil diunggah!`);
+                            // Cek format respon baru (penanganan sukses bersyarat / skipped duplicate)
+                            if(res.success) {
+                                dictionaryData = res.data;
+                                renderAdminWords();
+                                renderWords();
+                                showCustomToast(res.msg); // Munculkan pesan "X ditambahkan. Y dilewati..."
+                            } else if(Array.isArray(res)) {
+                                // Fallback antisipasi jika format lama yang terpakai
+                                dictionaryData = res;
+                                renderAdminWords();
+                                renderWords();
+                                showCustomToast(`${newItems.length} kata berhasil diunggah!`);
+                            }
                         }
                     } else {
                         hideLoading();
