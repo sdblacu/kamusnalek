@@ -618,14 +618,14 @@
         function playAudio() {
             const text = document.getElementById('detailWord').innerText;
             // Menggunakan jalur API Google (gtx) yang diizinkan untuk website luar
-            const audioUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=id&q=${encodeURIComponent(text)}`;
+            const audioUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=jv&q=${encodeURIComponent(text)}`;
             const audio = new Audio(audioUrl);
             
             audio.play().catch(error => {
                 console.warn("Google TTS diblokir, menggunakan suara bawaan:", error);
                 // SISTEM CADANGAN: Jika koneksi ke Google gagal, pakai suara bawaan HP
                 const speech = new SpeechSynthesisUtterance(text);
-                speech.lang = 'id-ID';
+                speech.lang = 'jv-ID';
                 window.speechSynthesis.speak(speech);
             });
         }
