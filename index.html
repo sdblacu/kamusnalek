@@ -358,6 +358,8 @@
                     <input type="hidden" id="formId">
                     <input type="hidden" id="formType" value="MAIN">
                     
+                    <div id="form-alert" class="hidden bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 p-3 rounded-xl text-sm font-bold border border-red-200 dark:border-red-800 text-center mb-4"></div>
+                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold mb-1">Kosa Kata <span class="text-red-500">*</span></label>
@@ -768,6 +770,7 @@
         function openFormModal(id = null) {
             document.getElementById('dataForm').reset();
             document.getElementById('formType').value = 'MAIN';
+            document.getElementById('form-alert').classList.add('hidden');
             
             if (id) {
                 document.getElementById('formTitle').innerText = 'Edit Kata';
@@ -793,6 +796,7 @@
             document.getElementById('dataForm').reset();
             document.getElementById('formType').value = 'SUGGESTION';
             document.getElementById('formTitle').innerText = 'Edit Usulan Pengguna';
+            document.getElementById('form-alert').classList.add('hidden');
             
             const item = suggestionData.find(d => d.id === id);
             if (item) {
@@ -830,7 +834,11 @@
             if (res) {
                 // TANGKAP ERROR DUPLIKASI DATA DARI BACKEND
                 if (res.error) {
-                    showCustomToast(res.msg);
+                    const alertBox = document.getElementById('form-alert');
+                    alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ' + res.msg;
+                    alertBox.classList.remove('hidden');
+                    // Sembunyikan notifikasi setelah 5 detik
+                    setTimeout(() => alertBox.classList.add('hidden'), 5000);
                     return; // Hentikan eksekusi, biarkan form tetap terbuka
                 }
 
