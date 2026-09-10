@@ -617,9 +617,14 @@
 
         function playAudio() {
             const text = document.getElementById('detailWord').innerText;
-            const speech = new SpeechSynthesisUtterance(text);
-            speech.lang = 'id-ID';
-            window.speechSynthesis.speak(speech);
+            // Menggunakan Google TTS Cloud agar suara 100% konsisten di semua perangkat (Android/iOS/PC)
+            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=${encodeURIComponent(text)}`;
+            const audio = new Audio(audioUrl);
+            
+            audio.play().catch(error => {
+                console.warn("Audio error:", error);
+                showCustomToast("Gagal memutar suara. Pastikan koneksi internet aktif.");
+            });
         }
 
         function openSuggestModal() {
