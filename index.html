@@ -617,13 +617,16 @@
 
         function playAudio() {
             const text = document.getElementById('detailWord').innerText;
-            // Menggunakan Google TTS Cloud agar suara 100% konsisten di semua perangkat (Android/iOS/PC)
-            const audioUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=id&client=tw-ob&q=${encodeURIComponent(text)}`;
+            // Menggunakan jalur API Google (gtx) yang diizinkan untuk website luar
+            const audioUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=id&q=${encodeURIComponent(text)}`;
             const audio = new Audio(audioUrl);
             
             audio.play().catch(error => {
-                console.warn("Audio error:", error);
-                showCustomToast("Gagal memutar suara. Pastikan koneksi internet aktif.");
+                console.warn("Google TTS diblokir, menggunakan suara bawaan:", error);
+                // SISTEM CADANGAN: Jika koneksi ke Google gagal, pakai suara bawaan HP
+                const speech = new SpeechSynthesisUtterance(text);
+                speech.lang = 'id-ID';
+                window.speechSynthesis.speak(speech);
             });
         }
 
