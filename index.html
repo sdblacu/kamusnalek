@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="id" class="light">
 <head>
-    <meta name="google-site-verification" content="YPQbmtNTvxa5WMkMf557lNJ5Uzv8UYHR5cNqw3UfOAQ" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KAMUS BAHASE KULE</title>
@@ -28,7 +27,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.css"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <!-- SheetJS for Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
@@ -36,8 +34,6 @@
         .hover-float:hover { transform: translateY(-4px); }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Custom Scrollbar for modals */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -47,9 +43,9 @@
 <body class="bg-slate-50 dark:bg-slate-900 transition-colors duration-300 min-h-screen text-slate-800 dark:text-slate-200">
 
     <!-- GLOBAL LOADING SCREEN -->
-    <div id="globalLoader" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center text-white transition-opacity">
+    <div id="globalLoader" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center text-white transition-opacity">
         <i class="fa-solid fa-circle-notch fa-spin text-5xl mb-4 text-indigo-400"></i>
-        <p id="loaderText" class="text-lg font-semibold animate-pulse">Menghubungkan ke Server...</p>
+        <p id="loaderText" class="text-lg font-semibold animate-pulse">Menghubungkan ke Firebase...</p>
     </div>
 
     <!-- Navbar -->
@@ -62,11 +58,11 @@
                 <span class="font-bold text-xl hidden sm:block tracking-wide">BAHASE KULE</span>
             </div>
             <div class="flex gap-3">
-                <button onclick="toggleDarkMode()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition text-slate-600 dark:text-slate-300">
+                <button onclick="window.toggleDarkMode()" class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition text-slate-600 dark:text-slate-300">
                     <i class="fa-solid fa-moon dark:hidden"></i>
                     <i class="fa-solid fa-sun hidden dark:inline"></i>
                 </button>
-                <button onclick="openLoginModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-md hover:shadow-lg">
+                <button onclick="window.openLoginModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition shadow-md hover:shadow-lg">
                     <i class="fa-solid fa-shield-halved mr-2"></i>Admin
                 </button>
             </div>
@@ -79,20 +75,18 @@
             <h1 class="text-3xl sm:text-5xl font-extrabold mb-3">KAMUS BAHASE KULE</h1>
             <p class="text-indigo-100 text-lg sm:text-xl mb-6">Kamus Bahasa Jawa Cilegon Digital</p>
             
-            <!-- Lencana Total Kata -->
             <div class="inline-flex items-center bg-white/20 backdrop-blur-sm px-4 py-1.5 rounded-full text-sm font-semibold mb-6 shadow-sm">
                 <i class="fa-solid fa-book-bookmark mr-2 text-indigo-100"></i>
                 <span id="total-words-count">Memuat Data...</span>
             </div>
 
-            <!-- Search Bar -->
             <div class="relative max-w-xl mx-auto shadow-2xl rounded-2xl">
-                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Cari kosa kata, makna, atau istilah..." 
+                <input type="text" id="searchInput" oninput="window.handleSearch()" placeholder="Cari kosa kata, makna, atau istilah..." 
                     class="w-full px-6 py-4 rounded-2xl text-slate-800 text-lg focus:outline-none focus:ring-4 focus:ring-indigo-300 transition pl-14 placeholder-slate-400">
                 <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xl"></i>
             </div>
             
-            <button onclick="openSuggestModal()" class="mt-6 px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 rounded-xl transition font-semibold">
+            <button onclick="window.openSuggestModal()" class="mt-6 px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white border border-white/30 rounded-xl transition font-semibold">
                 <i class="fa-solid fa-lightbulb text-yellow-300 mr-2"></i> Usulkan Kosakata Baru
             </button>
         </div>
@@ -121,10 +115,10 @@
                         <span class="inline-block mt-2 text-sm font-semibold px-3 py-1 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 rounded-full" id="detailCategory">Kategori</span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="playAudio()" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 transition">
+                        <button onclick="window.playAudio()" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-300 transition">
                             <i class="fa-solid fa-volume-high"></i>
                         </button>
-                        <button onclick="closeModal('detailModal')" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 rounded-full flex items-center justify-center transition">
+                        <button onclick="window.closeModal('detailModal')" class="w-10 h-10 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-500 rounded-full flex items-center justify-center transition">
                             <i class="fa-solid fa-xmark"></i>
                         </button>
                     </div>
@@ -158,16 +152,16 @@
         </div>
     </div>
 
-    <!-- MODAL: Usulkan Kosa Kata (USER) -->
+    <!-- MODAL: Usulkan Kosa Kata -->
     <div id="suggestModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0">
                 <h2 class="text-xl font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-lightbulb text-yellow-500 mr-2"></i> Usulkan Kosakata</h2>
-                <button onclick="closeModal('suggestModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="window.closeModal('suggestModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto custom-scrollbar">
-                <form id="suggestForm" onsubmit="handleUserSubmitSuggestion(event)" class="space-y-4">
+                <form id="suggestForm" onsubmit="window.handleUserSubmitSuggestion(event)" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-semibold mb-1">Kosa Kata Baru <span class="text-red-500">*</span></label>
@@ -219,10 +213,10 @@
         </div>
     </div>
 
-    <!-- MODAL: Admin Login -->
+    <!-- MODAL: Admin Login & Dashboard Area -->
     <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity p-4">
         <div class="bg-white dark:bg-slate-800 p-8 rounded-3xl w-full max-w-sm shadow-2xl relative">
-            <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <button onclick="window.closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             <div class="text-center mb-6">
                 <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-3">
                     <i class="fa-solid fa-shield-halved text-2xl"></i>
@@ -230,7 +224,7 @@
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Admin Akses</h2>
             </div>
             
-            <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+            <form id="loginForm" onsubmit="window.handleLoginSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-sm font-semibold mb-1">Username</label>
                     <input type="text" id="username" required class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
@@ -241,7 +235,6 @@
                 </div>
                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md">Masuk</button>
             </form>
-            <p class="text-xs text-center text-slate-400 mt-4">Kredensial bawaan: demo / demo</p>
         </div>
     </div>
 
@@ -250,17 +243,17 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col shadow-2xl">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80 rounded-t-3xl shrink-0">
                 <h2 class="text-2xl font-bold text-slate-800 dark:text-white"><i class="fa-solid fa-cube text-indigo-500 mr-2"></i> Dashboard Admin</h2>
-                <button onclick="handleLogout()" class="text-red-500 hover:text-red-700 font-semibold px-3 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition">
+                <button onclick="window.handleLogout()" class="text-red-500 hover:text-red-700 font-semibold px-3 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition">
                     <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
                 </button>
             </div>
 
             <div class="px-6 border-b border-slate-200 dark:border-slate-700 flex overflow-x-auto hide-scroll gap-4 shrink-0">
-                <button onclick="switchAdminTab('kelola')" id="tab-kelola" class="px-4 py-3 font-semibold text-indigo-600 border-b-2 border-indigo-600 whitespace-nowrap">Kelola Kamus</button>
-                <button onclick="switchAdminTab('usulan')" id="tab-usulan" class="px-4 py-3 font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
+                <button onclick="window.switchAdminTab('kelola')" id="tab-kelola" class="px-4 py-3 font-semibold text-indigo-600 border-b-2 border-indigo-600 whitespace-nowrap">Kelola Kamus</button>
+                <button onclick="window.switchAdminTab('usulan')" id="tab-usulan" class="px-4 py-3 font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">
                     Usulan Masuk <span id="usulan-badge" class="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full hidden">0</span>
                 </button>
-                <button onclick="switchAdminTab('profil')" id="tab-profil" class="px-4 py-3 font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Profil Admin</button>
+                <button onclick="window.switchAdminTab('profil')" id="tab-profil" class="px-4 py-3 font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 whitespace-nowrap">Profil Admin</button>
             </div>
 
             <div class="flex-1 overflow-y-auto p-6 custom-scrollbar" id="adminContent">
@@ -268,22 +261,22 @@
                 <div id="panel-kelola" class="block">
                     <div class="flex flex-col sm:flex-row flex-wrap justify-between items-center mb-6 gap-3">
                         <div class="relative w-full sm:w-64 shrink-0">
-                            <input type="text" id="adminSearch" oninput="renderAdminWords()" placeholder="Cari di database..." class="w-full px-4 py-2 pl-10 bg-slate-100 dark:bg-slate-700 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
+                            <input type="text" id="adminSearch" oninput="window.renderAdminWords()" placeholder="Cari di database..." class="w-full px-4 py-2 pl-10 bg-slate-100 dark:bg-slate-700 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
                         </div>
                         
                         <div class="flex flex-col sm:flex-row flex-wrap gap-2 w-full sm:w-auto">
-                            <button onclick="downloadExcelTemplate()" class="flex-1 sm:flex-none px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                            <button onclick="window.downloadExcelTemplate()" class="flex-1 sm:flex-none px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
                                 <i class="fa-solid fa-file-excel mr-1"></i> Template Excel
                             </button>
-                            <input type="file" id="excelUpload" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUploadAction(event)">
+                            <input type="file" id="excelUpload" accept=".xlsx, .xls" class="hidden" onchange="window.handleExcelUploadAction(event)">
                             <button onclick="document.getElementById('excelUpload').click()" class="flex-1 sm:flex-none px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
                                 <i class="fa-solid fa-upload mr-1"></i> Unggah Excel
                             </button>
-                            <button onclick="exportToPDF()" class="flex-1 sm:flex-none px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                            <button onclick="window.exportToPDF()" class="flex-1 sm:flex-none px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-semibold shadow-sm transition">
                                 <i class="fa-solid fa-file-pdf mr-1"></i> Unduh PDF
                             </button>
-                            <button onclick="openFormModal()" class="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition">
+                            <button onclick="window.openFormModal()" class="flex-1 sm:flex-none px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition">
                                 <i class="fa-solid fa-plus mr-1"></i> Tambah Kata
                             </button>
                         </div>
@@ -328,7 +321,7 @@
                 <div id="panel-profil" class="hidden max-w-md mx-auto">
                     <div class="bg-slate-50 dark:bg-slate-700/30 p-6 rounded-2xl border border-slate-200 dark:border-slate-600">
                         <h3 class="text-lg font-bold mb-4">Pengaturan Akun Admin</h3>
-                        <form onsubmit="handleUpdateProfile(event)" class="space-y-4">
+                        <form onsubmit="window.handleUpdateProfile(event)" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold mb-1">Username Baru</label>
                                 <input type="text" id="prof_username" required class="w-full px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl">
@@ -350,11 +343,11 @@
         <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0">
                 <h2 class="text-xl font-bold" id="formTitle">Tambah Kata</h2>
-                <button onclick="closeModal('formModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="window.closeModal('formModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             
             <div class="p-6 overflow-y-auto custom-scrollbar">
-                <form id="dataForm" onsubmit="handleAdminSaveData(event)" class="space-y-4">
+                <form id="dataForm" onsubmit="window.handleAdminSaveData(event)" class="space-y-4">
                     <input type="hidden" id="formId">
                     <input type="hidden" id="formType" value="MAIN">
                     
@@ -411,13 +404,33 @@
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         /**
          * ==============================================================
-         * PENTING: GANTI URL DI BAWAH INI DENGAN URL DEPLOY APPS SCRIPT ANDA
+         * PENGATURAN FIREBASE (GANTI JIKA DEPLOY DI GITHUB PAGES)
          * ==============================================================
          */
-        const API_URL = "https://script.google.com/macros/s/AKfycbz9zPnL8ZxNk6QFwhJR8tQv0J6V_lBYHmlWUo2WiYdcPpTofnetkiUBtRzDMGjTsKAC/exec"; // <-- GANTI INI DENGAN URL DEPLOY TERBARU
+        const myFirebaseConfig = {
+            // SILAKAN COPY PASTE CONFIG FIREBASE ANDA DI SINI
+            apiKey: "AIzaSyCiANERF5l9N4QhLeG3JQ5fIjB82C2ao5o",
+            authDomain: "kamus-bahase-kule-c769f.firebaseapp.com",
+            projectId: "kamus-bahase-kule-c769f",
+            storageBucket: "kamus-bahase-kule-c769f.firebasestorage.app",
+            messagingSenderId: "733252995861",
+            appId: "1:733252995861:web:5cd52ea0c8ead5ea57771c"
+        };
+
+        // Otomatis menyesuaikan apakah jalan di Sandbox atau GitHub
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : myFirebaseConfig;
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kamus-bahase-kule';
+        let currentUser = null;
 
         // State Data Lokal
         let dictionaryData = []; 
@@ -426,93 +439,92 @@
         let currentFilter = 'ALL';
         let currentAdminTab = 'kelola';
 
-        // --- FETCH WRAPPER (KOMUNIKASI KE GOOGLE APPS SCRIPT) ---
-        async function callAPI(action, payload = null, isGet = false, loadingMsg = "Memproses...") {
-            showLoading(loadingMsg);
-            try {
-                let url = API_URL;
-                let options = {
-                    redirect: "follow" // PENTING: Untuk mengatasi pengalihan (redirect)
-                };
-                
-                if (isGet) {
-                    url += `?action=${action}`;
-                    options.method = "GET";
-                } else {
-                    options.method = "POST";
-                    options.headers = { "Content-Type": "text/plain;charset=utf-8" };
-                    options.body = JSON.stringify({ action: action, payload: payload });
-                }
-                
-                const response = await fetch(url, options);
-                
-                if (!response.ok) {
-                    throw new Error(`Server API menolak akses (Status: ${response.status})`);
-                }
-                
-                const data = await response.json();
-                hideLoading();
-                return data;
-            } catch (error) {
-                hideLoading();
-                console.warn("Info (Mode Pratinjau): Koneksi API terputus. Menggunakan data simulasi. " + error.message);
-                
-                // === MODE TIRUAN / FALLBACK ===
-                if (action === 'getDictionaryData') {
-                    showCustomToast("Peringatan: API gagal dihubungi. Menggunakan data tiruan (Mock Mode).");
-                    return [
-                        { id: 'M1', word: 'Aje', category: 'Adverbia (Kata Keterangan)', meaning: 'Jangan', example: 'Aje mengkono!', synonym: '-', antonym: 'Gera', example_translation: 'Jangan begitu!' },
-                        { id: 'M2', word: 'Bengen', category: 'Nomina (Kata Benda)', meaning: 'Zaman dahulu / Dulu', example: 'Bengen mah kule sering mlayu.', synonym: 'Biyen', antonym: 'Sekien', example_translation: 'Dulu saya sering berlari.' },
-                        { id: 'M3', word: 'Sira', category: 'Pronomina (Kata Ganti)', meaning: 'Kamu (Halus)', example: 'Sira arep ning ndi?', synonym: '-', antonym: 'Kule', example_translation: 'Kamu mau ke mana?' }
-                    ];
-                }
-                if (action === 'getPendingSuggestions') {
-                    return [{ id: 'S1', word: 'Endas', category: 'Nomina (Kata Benda)', meaning: 'Kepala', example: '-', synonym: '-', antonym: '-', example_translation: '-' }];
-                }
-                if (action === 'loginAdmin') {
-                    showCustomToast("Mock Mode: Login simulasi berhasil karena API gagal dihubungi.");
-                    return { success: true, name: "Admin Offline" };
-                }
-                
-                showCustomToast("Gagal terhubung ke Server API. Pastikan URL benar.");
-                return null;
-            }
-        }
-
         // --- SISTEM LOADING & UI ---
-        function showLoading(msg) {
+        window.showLoading = function(msg) {
             document.getElementById('loaderText').innerText = msg;
             document.getElementById('globalLoader').classList.remove('hidden');
-            document.getElementById('globalLoader').classList.add('flex');
         }
 
-        function hideLoading() {
+        window.hideLoading = function() {
             document.getElementById('globalLoader').classList.add('hidden');
-            document.getElementById('globalLoader').classList.remove('flex');
         }
 
-        function showCustomToast(msg) {
+        window.showCustomToast = function(msg) {
             const toast = document.getElementById('status-message');
             toast.innerText = msg;
-            setTimeout(() => toast.innerText = '', 4000); // Diperpanjang jadi 4 detik agar pesan jelas terbaca
+            setTimeout(() => toast.innerText = '', 4000); 
         }
 
-        function openModal(id) {
+        window.openModal = function(id) {
             const el = document.getElementById(id);
             el.classList.remove('hidden');
             setTimeout(() => el.classList.remove('opacity-0'), 10);
         }
 
-        function closeModal(id) {
+        window.closeModal = function(id) {
             const el = document.getElementById(id);
             el.classList.add('opacity-0');
             setTimeout(() => el.classList.add('hidden'), 300);
         }
 
-        function toggleDarkMode() {
+        window.toggleDarkMode = function() {
             document.documentElement.classList.toggle('dark');
             const isDark = document.documentElement.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // --- FIREBASE DATA FETCHING ---
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                    const credential = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = credential.user;
+                } else {
+                    const credential = await signInAnonymously(auth);
+                    currentUser = credential.user;
+                }
+                return true;
+            } catch(e) {
+                console.error("Auth error:", e);
+                return false;
+            }
+        }
+
+        async function fetchAllData() {
+            if (!currentUser) return;
+            try {
+                // Ambil Data Kamus Utama
+                const wordsCol = collection(db, 'artifacts', appId, 'public', 'data', 'words');
+                const wordsSnapshot = await getDocs(wordsCol);
+                dictionaryData = wordsSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+                
+                // Jika database masih benar-benar kosong, masukkan 1 data contoh
+                if(dictionaryData.length === 0) {
+                    const sampleWord = { word: 'Bengen', category: 'Nomina (Kata Benda)', meaning: 'Zaman dahulu / Dulu', example: 'Bengen mah kule sering mlayu.', synonym: 'Biyen', antonym: 'Sekien', example_translation: 'Dulu saya sering berlari.' };
+                    const docRef = await addDoc(wordsCol, sampleWord);
+                    dictionaryData = [{id: docRef.id, ...sampleWord}];
+                }
+
+                window.renderWords();
+            } catch (error) {
+                console.error("Gagal mengambil data kamus:", error);
+                window.showCustomToast("Gagal memuat data dari server.");
+            }
+        }
+
+        async function fetchSuggestions() {
+            if (!currentUser) return;
+            try {
+                const sugCol = collection(db, 'artifacts', appId, 'public', 'data', 'suggestions');
+                const sugSnapshot = await getDocs(sugCol);
+                suggestionData = sugSnapshot.docs
+                    .map(doc => ({id: doc.id, ...doc.data()}))
+                    .filter(doc => doc.status === 'PENDING');
+                
+                window.renderSuggestions();
+            } catch (error) {
+                console.error("Gagal mengambil usulan:", error);
+            }
         }
 
         // --- INISIALISASI SAAT HALAMAN DIBUKA ---
@@ -520,23 +532,30 @@
             if (localStorage.getItem('theme') === 'dark') {
                 document.documentElement.classList.add('dark');
             }
-            renderAlphabet();
+            window.renderAlphabet();
             
-            // Ambil data langsung dari Apps Script API
-            const data = await callAPI('getDictionaryData', null, true, "Memuat Data Kamus...");
-            if (data) {
-                dictionaryData = data;
-                renderWords();
+            // Proses Auth & Fetch Firebase
+            const authSuccess = await initAuth();
+            if(authSuccess) {
+                await fetchAllData();
+            } else {
+                window.showCustomToast("Gagal terhubung ke database otentikasi.");
+            }
+            
+            window.hideLoading();
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.getVoices();
             }
         });
 
         // --- LOGIKA TAMPILAN USER ---
-        function renderAlphabet() {
+        window.renderAlphabet = function() {
             const container = document.getElementById('alphabet-container');
             const alphabets = ['ALL', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
             
             container.innerHTML = alphabets.map(letter => `
-                <button onclick="filterByAlphabet('${letter}')" 
+                <button onclick="window.filterByAlphabet('${letter}')" 
                     class="px-4 py-2 min-w-[2.5rem] text-sm font-bold rounded-xl transition shadow-sm border 
                     ${currentFilter === letter 
                         ? 'bg-indigo-600 text-white border-indigo-600' 
@@ -546,21 +565,20 @@
             `).join('');
         }
 
-        function filterByAlphabet(letter) {
+        window.filterByAlphabet = function(letter) {
             currentFilter = letter;
-            renderAlphabet();
-            renderWords();
+            window.renderAlphabet();
+            window.renderWords();
         }
 
-        function handleSearch() {
+        window.handleSearch = function() {
             searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            renderWords();
+            window.renderWords();
         }
 
-        function renderWords(wordsToRender = null) {
+        window.renderWords = function(wordsToRender = null) {
             const container = document.getElementById('words-container');
             const countBadge = document.getElementById('total-words-count');
-            
             let targetData = wordsToRender || dictionaryData;
             
             if (countBadge) {
@@ -590,7 +608,7 @@
             const limitedFiltered = filtered.slice(0, 10);
 
             container.innerHTML = limitedFiltered.map(item => `
-                <div onclick="showDetail('${item.id}')" class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover-float hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition duration-300">
+                <div onclick="window.showDetail('${item.id}')" class="bg-white dark:bg-slate-800 p-5 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700 cursor-pointer hover-float hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-600 transition duration-300">
                     <div class="flex justify-between items-start mb-2">
                         <h3 class="text-xl font-bold text-slate-800 dark:text-white">${item.word}</h3>
                         <span class="text-xs font-semibold px-3 py-1 bg-indigo-50 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300 rounded-full border border-indigo-100 dark:border-indigo-800/50">${item.category}</span>
@@ -600,7 +618,7 @@
             `).join('');
         }
 
-        function showDetail(id) {
+        window.showDetail = function(id) {
             const item = dictionaryData.find(d => d.id === id);
             if (!item) return;
 
@@ -612,32 +630,42 @@
             document.getElementById('detailSynonym').innerText = item.synonym || '-';
             document.getElementById('detailAntonym').innerText = item.antonym || '-';
 
-            openModal('detailModal');
+            window.openModal('detailModal');
         }
 
-        function playAudio() {
+        window.playAudio = function() {
             const text = document.getElementById('detailWord').innerText;
-            // Menggunakan jalur API Google (gtx) yang diizinkan untuk website luar
-            const audioUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=jv&q=${encodeURIComponent(text)}`;
-            const audio = new Audio(audioUrl);
+            const fileName = text.toLowerCase().replace(/\s+/g, '_') + '.mp3';
+            const mp3Url = 'audio/' + fileName;
+            const audio = new Audio(mp3Url);
             
-            audio.play().catch(error => {
-                console.warn("Google TTS diblokir, menggunakan suara bawaan:", error);
-                // SISTEM CADANGAN: Jika koneksi ke Google gagal, pakai suara bawaan HP
-                const speech = new SpeechSynthesisUtterance(text);
-                speech.lang = 'jv-ID';
-                window.speechSynthesis.speak(speech);
+            audio.play().catch(err => {
+                const audioUrl = `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=id&q=${encodeURIComponent(text)}`;
+                const robotAudio = new Audio(audioUrl);
+                
+                robotAudio.play().catch(error => {
+                    const speech = new SpeechSynthesisUtterance(text);
+                    speech.rate = 0.9;
+                    speech.lang = 'id-ID'; 
+                    let voices = window.speechSynthesis.getVoices();
+                    let indonesianVoice = voices.find(voice => voice.lang.includes('id') || voice.lang.includes('ID'));
+                    if (indonesianVoice) speech.voice = indonesianVoice;
+                    window.speechSynthesis.speak(speech);
+                });
             });
         }
 
-        function openSuggestModal() {
+        // --- INTERAKSI FIREBASE PENGGUNA (USER) ---
+        window.openSuggestModal = function() {
             document.getElementById('suggestForm').reset();
-            openModal('suggestModal');
+            window.openModal('suggestModal');
         }
 
-        // --- INTERAKSI API PENGGUNA (USER) ---
-        async function handleUserSubmitSuggestion(e) {
+        window.handleUserSubmitSuggestion = async function(e) {
             e.preventDefault();
+            if (!currentUser) return;
+
+            window.showLoading("Mengirim Usulan...");
             const payload = {
                 word: document.getElementById('sug_word').value,
                 category: document.getElementById('sug_category').value,
@@ -645,53 +673,77 @@
                 synonym: document.getElementById('sug_synonym').value || '-',
                 antonym: document.getElementById('sug_antonym').value || '-',
                 example: document.getElementById('sug_example').value || '-',
-                example_translation: document.getElementById('sug_example_trans').value || '-'
+                example_translation: document.getElementById('sug_example_trans').value || '-',
+                status: 'PENDING',
+                timestamp: new Date().toISOString()
             };
             
-            const res = await callAPI('submitSuggestion', payload, false, "Mengirim Usulan...");
-            if (res && res.success) {
-                closeModal('suggestModal');
-                showCustomToast("Usulan berhasil dikirim! Menunggu verifikasi admin.");
+            try {
+                const sugCol = collection(db, 'artifacts', appId, 'public', 'data', 'suggestions');
+                await addDoc(sugCol, payload);
+                window.closeModal('suggestModal');
+                window.showCustomToast("Usulan berhasil dikirim! Menunggu verifikasi admin.");
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Gagal mengirim usulan.");
+            } finally {
+                window.hideLoading();
             }
         }
 
-        // --- INTERAKSI API ADMIN ---
-        function openLoginModal() {
+        // --- INTERAKSI FIREBASE ADMIN ---
+        window.openLoginModal = function() {
             document.getElementById('loginForm').reset();
-            openModal('loginModal');
+            window.openModal('loginModal');
         }
 
-        async function handleLoginSubmit(e) {
+        window.handleLoginSubmit = async function(e) {
             e.preventDefault();
-            const payload = {
-                username: document.getElementById('username').value,
-                password: document.getElementById('password').value
-            };
+            if (!currentUser) return;
+            window.showLoading("Memverifikasi Admin...");
             
-            const res = await callAPI('loginAdmin', payload, false, "Memverifikasi...");
+            const userInp = document.getElementById('username').value;
+            const passInp = document.getElementById('password').value;
             
-            if (res && res.success) {
-                closeModal('loginModal');
-                openModal('adminModal');
-                document.getElementById('prof_username').value = payload.username;
+            try {
+                const adminDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_auth');
+                let adminSnap = await getDoc(adminDocRef);
                 
-                // Fetch usulan terbaru saat login berhasil
-                const sugData = await callAPI('getPendingSuggestions', null, true, "Memuat Dashboard...");
-                if (sugData) suggestionData = sugData;
+                // Buat kredensial bawaan jika belum pernah disetel sama sekali
+                if (!adminSnap.exists()) {
+                    await setDoc(adminDocRef, { username: 'demo', password: 'password123' });
+                    adminSnap = await getDoc(adminDocRef);
+                }
+
+                const adminData = adminSnap.data();
                 
-                renderAdminWords();
-                renderSuggestions();
-            } else {
-                showCustomToast(res ? res.msg : "Username atau sandi salah!");
+                // Pengecualian untuk bypass awal 'demo/demo'
+                if ((userInp === adminData.username && passInp === adminData.password) || 
+                    (userInp === 'demo' && passInp === 'demo')) {
+                    
+                    window.closeModal('loginModal');
+                    window.openModal('adminModal');
+                    document.getElementById('prof_username').value = adminData.username;
+                    
+                    await fetchSuggestions();
+                    window.renderAdminWords();
+                } else {
+                    window.showCustomToast("Username atau sandi salah!");
+                }
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Terjadi kesalahan sistem saat login.");
+            } finally {
+                window.hideLoading();
             }
         }
 
-        function handleLogout() {
-            closeModal('adminModal');
-            showCustomToast("Berhasil keluar.");
+        window.handleLogout = function() {
+            window.closeModal('adminModal');
+            window.showCustomToast("Berhasil keluar.");
         }
 
-        function switchAdminTab(tab) {
+        window.switchAdminTab = function(tab) {
             currentAdminTab = tab;
             ['kelola', 'usulan', 'profil'].forEach(t => {
                 document.getElementById(`panel-${t}`).classList.add('hidden');
@@ -704,24 +756,33 @@
             document.getElementById(`tab-${tab}`).classList.remove('text-slate-500');
         }
 
-        async function handleUpdateProfile(e) {
+        window.handleUpdateProfile = async function(e) {
             e.preventDefault();
-            const payload = {
-                oldUsername: document.getElementById('prof_username').value,
-                newUsername: document.getElementById('prof_username').value,
-                newPassword: document.getElementById('prof_password').value
-            };
+            if (!currentUser) return;
+            window.showLoading("Memperbarui Profil...");
             
-            const res = await callAPI('updateAdminProfile', payload, false, "Memperbarui Profil...");
-            if (res && res.success) {
-                showCustomToast("Profil diperbarui. Silakan login ulang.");
-                handleLogout();
-            } else {
-                showCustomToast(res ? res.msg : "Gagal memperbarui profil.");
+            const newUsername = document.getElementById('prof_username').value;
+            const newPassword = document.getElementById('prof_password').value;
+            
+            try {
+                const adminDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_auth');
+                const updateData = { username: newUsername };
+                if (newPassword) {
+                    updateData.password = newPassword;
+                }
+                
+                await updateDoc(adminDocRef, updateData);
+                window.showCustomToast("Profil diperbarui. Silakan login ulang.");
+                window.handleLogout();
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Gagal memperbarui profil.");
+            } finally {
+                window.hideLoading();
             }
         }
 
-        function renderAdminWords() {
+        window.renderAdminWords = function() {
             const tbody = document.getElementById('adminTableBody');
             const term = document.getElementById('adminSearch').value.toLowerCase();
             
@@ -736,14 +797,14 @@
                     <td class="p-4"><span class="px-2 py-1 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 rounded text-xs whitespace-nowrap">${item.category}</span></td>
                     <td class="p-4 truncate max-w-[200px]" title="${item.meaning}">${item.meaning}</td>
                     <td class="p-4 text-center whitespace-nowrap">
-                        <button onclick="openFormModal('${item.id}')" class="text-indigo-500 hover:text-indigo-700 mx-1"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="actionDeleteWord('${item.id}')" class="text-red-500 hover:text-red-700 mx-1"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="window.openFormModal('${item.id}')" class="text-indigo-500 hover:text-indigo-700 mx-1"><i class="fa-solid fa-pen"></i></button>
+                        <button onclick="window.actionDeleteWord('${item.id}')" class="text-red-500 hover:text-red-700 mx-1"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function renderSuggestions() {
+        window.renderSuggestions = function() {
             const tbody = document.getElementById('suggestionTableBody');
             const badge = document.getElementById('usulan-badge');
             
@@ -767,15 +828,15 @@
                     </td>
                     <td class="p-4 truncate max-w-[200px]" title="${item.meaning}">${item.meaning}</td>
                     <td class="p-4 text-center whitespace-nowrap">
-                        <button onclick="actionApproveSuggestion('${item.id}')" class="text-emerald-500 hover:text-emerald-700 mx-1" title="Setujui"><i class="fa-solid fa-check-circle text-lg"></i></button>
-                        <button onclick="actionEditSuggestion('${item.id}')" class="text-blue-500 hover:text-blue-700 mx-1" title="Edit Usulan"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
-                        <button onclick="actionRejectSuggestion('${item.id}')" class="text-red-500 hover:text-red-700 mx-1" title="Tolak"><i class="fa-solid fa-xmark-circle text-lg"></i></button>
+                        <button onclick="window.actionApproveSuggestion('${item.id}')" class="text-emerald-500 hover:text-emerald-700 mx-1" title="Setujui"><i class="fa-solid fa-check-circle text-lg"></i></button>
+                        <button onclick="window.actionEditSuggestion('${item.id}')" class="text-blue-500 hover:text-blue-700 mx-1" title="Edit Usulan"><i class="fa-solid fa-pen-to-square text-lg"></i></button>
+                        <button onclick="window.actionRejectSuggestion('${item.id}')" class="text-red-500 hover:text-red-700 mx-1" title="Tolak"><i class="fa-solid fa-xmark-circle text-lg"></i></button>
                     </td>
                 </tr>
             `).join('');
         }
 
-        function openFormModal(id = null) {
+        window.openFormModal = function(id = null) {
             document.getElementById('dataForm').reset();
             document.getElementById('formType').value = 'MAIN';
             document.getElementById('form-alert').classList.add('hidden');
@@ -797,10 +858,10 @@
                 document.getElementById('formTitle').innerText = 'Tambah Kata';
                 document.getElementById('formId').value = '';
             }
-            openModal('formModal');
+            window.openModal('formModal');
         }
 
-        function actionEditSuggestion(id) {
+        window.actionEditSuggestion = function(id) {
             document.getElementById('dataForm').reset();
             document.getElementById('formType').value = 'SUGGESTION';
             document.getElementById('formTitle').innerText = 'Edit Usulan Pengguna';
@@ -817,16 +878,17 @@
                 document.getElementById('inp_synonym').value = item.synonym !== '-' ? item.synonym : '';
                 document.getElementById('inp_antonym').value = item.antonym !== '-' ? item.antonym : '';
             }
-            openModal('formModal');
+            window.openModal('formModal');
         }
 
-        async function handleAdminSaveData(e) {
+        window.handleAdminSaveData = async function(e) {
             e.preventDefault();
+            if (!currentUser) return;
+            
             const id = document.getElementById('formId').value;
             const type = document.getElementById('formType').value;
             
             const payload = {
-                id: id || '',
                 word: document.getElementById('inp_word').value,
                 category: document.getElementById('inp_category').value,
                 meaning: document.getElementById('inp_meaning').value,
@@ -836,78 +898,154 @@
                 antonym: document.getElementById('inp_antonym').value || '-'
             };
 
-            const endpoint = type === 'SUGGESTION' ? 'updateSuggestion' : 'saveWord';
-            const res = await callAPI(endpoint, payload, false, "Menyimpan Data...");
+            // CEK DUPLIKAT (Filter Anti-Ganda)
+            const wordKey = payload.word.toLowerCase().trim();
+            const isDuplicate = dictionaryData.some(d => d.word.toLowerCase().trim() === wordKey && d.id !== id);
             
-            if (res) {
-                // TANGKAP ERROR DUPLIKASI DATA DARI BACKEND
-                if (res.error) {
-                    const alertBox = document.getElementById('form-alert');
-                    alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ' + res.msg;
-                    alertBox.classList.remove('hidden');
-                    // Sembunyikan notifikasi setelah 5 detik
-                    setTimeout(() => alertBox.classList.add('hidden'), 5000);
-                    return; // Hentikan eksekusi, biarkan form tetap terbuka
-                }
+            if (isDuplicate) {
+                const alertBox = document.getElementById('form-alert');
+                alertBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i> Gagal: Kosa kata sudah ada di database!';
+                alertBox.classList.remove('hidden');
+                setTimeout(() => alertBox.classList.add('hidden'), 5000);
+                return;
+            }
 
+            window.showLoading("Menyimpan Data...");
+            try {
                 if (type === 'SUGGESTION') {
-                    suggestionData = res;
-                    renderSuggestions();
-                    showCustomToast("Usulan berhasil diperbarui.");
+                    const sugDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'suggestions', id);
+                    await updateDoc(sugDocRef, payload);
+                    
+                    const index = suggestionData.findIndex(s => s.id === id);
+                    if (index !== -1) suggestionData[index] = { ...suggestionData[index], ...payload };
+                    
+                    window.renderSuggestions();
+                    window.showCustomToast("Usulan berhasil diperbarui.");
                 } else {
-                    dictionaryData = res;
-                    renderAdminWords();
-                    renderWords();
-                    showCustomToast("Data kamus berhasil disimpan.");
+                    const wordsCol = collection(db, 'artifacts', appId, 'public', 'data', 'words');
+                    if (id) {
+                        const wordDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'words', id);
+                        await updateDoc(wordDocRef, payload);
+                        const index = dictionaryData.findIndex(w => w.id === id);
+                        if (index !== -1) dictionaryData[index] = { ...dictionaryData[index], ...payload };
+                    } else {
+                        const newDocRef = await addDoc(wordsCol, payload);
+                        dictionaryData.push({ id: newDocRef.id, ...payload });
+                    }
+                    window.renderAdminWords();
+                    window.renderWords();
+                    window.showCustomToast("Data kamus berhasil disimpan.");
                 }
-                closeModal('formModal');
+                window.closeModal('formModal');
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Gagal menyimpan data.");
+            } finally {
+                window.hideLoading();
             }
         }
 
-        async function actionDeleteWord(id) {
-            if(!confirm("Yakin ingin menghapus kata ini?")) return;
-            const res = await callAPI('deleteWord', { id: id }, false, "Menghapus...");
-            if (res) {
-                dictionaryData = res;
-                renderAdminWords();
-                renderWords();
-                showCustomToast("Kata berhasil dihapus.");
+        window.actionDeleteWord = async function(id) {
+            // Gunakan custom modal konfirmasi jika memungkinkan, tapi untuk kesederhanaan di contoh ini:
+            const confirmDelete = document.getElementById('status-message');
+            confirmDelete.innerHTML = `Yakin hapus? <button onclick="window.confirmDeleteWord('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Ya</button> <button onclick="window.showCustomToast('Batal menghapus')" class="bg-slate-300 px-2 py-1 rounded ml-1">Batal</button>`;
+            // Prevent auto hide
+        }
+
+        window.confirmDeleteWord = async function(id) {
+            if (!currentUser) return;
+            window.showLoading("Menghapus...");
+            try {
+                const wordDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'words', id);
+                await deleteDoc(wordDocRef);
+                
+                dictionaryData = dictionaryData.filter(w => w.id !== id);
+                window.renderAdminWords();
+                window.renderWords();
+                window.showCustomToast("Kata berhasil dihapus.");
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Gagal menghapus data.");
+            } finally {
+                window.hideLoading();
             }
         }
 
-        async function actionApproveSuggestion(id) {
-            const res = await callAPI('approveSuggestion', { id: id }, false, "Menyetujui Usulan...");
-            if (res) {
-                // TANGKAP ERROR JIKA KATA USULAN TERNYATA SUDAH ADA DI KAMUS
-                if (res.error) {
-                    suggestionData = res.suggestions;
-                    renderSuggestions();
-                    showCustomToast(res.msg);
-                    return; // Hentikan, usulan ditandai ditolak otomatis di server
+        window.actionApproveSuggestion = async function(id) {
+            if (!currentUser) return;
+            window.showLoading("Menyetujui Usulan...");
+            try {
+                const sug = suggestionData.find(s => s.id === id);
+                if (!sug) throw new Error("Usulan tidak ditemukan");
+
+                // Cek Duplikat saat persetujuan
+                const wordKey = sug.word.toLowerCase().trim();
+                const isDuplicate = dictionaryData.some(d => d.word.toLowerCase().trim() === wordKey);
+                
+                if (isDuplicate) {
+                    const sugDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'suggestions', id);
+                    await updateDoc(sugDocRef, { status: 'REJECTED_DUPLICATE' });
+                    suggestionData = suggestionData.filter(s => s.id !== id);
+                    window.renderSuggestions();
+                    window.showCustomToast("Gagal menyetujui: Kosa kata sudah ada di database utama. Usulan dibuang.");
+                    window.hideLoading();
+                    return;
                 }
 
-                dictionaryData = res.mainData;
-                suggestionData = res.suggestions;
-                renderSuggestions();
-                renderAdminWords();
-                renderWords();
-                showCustomToast("Usulan disetujui & ditambahkan ke kamus utama!");
+                // Tambah ke Kamus Utama
+                const payload = {
+                    word: sug.word, category: sug.category, meaning: sug.meaning,
+                    example: sug.example, example_translation: sug.example_translation,
+                    synonym: sug.synonym, antonym: sug.antonym
+                };
+                
+                const wordsCol = collection(db, 'artifacts', appId, 'public', 'data', 'words');
+                const newDocRef = await addDoc(wordsCol, payload);
+                dictionaryData.push({ id: newDocRef.id, ...payload });
+                
+                // Tandai usulan selesai/dihapus
+                const sugDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'suggestions', id);
+                await deleteDoc(sugDocRef);
+                suggestionData = suggestionData.filter(s => s.id !== id);
+                
+                window.renderSuggestions();
+                window.renderAdminWords();
+                window.renderWords();
+                window.showCustomToast("Usulan disetujui & ditambahkan!");
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Gagal menyetujui usulan.");
+            } finally {
+                window.hideLoading();
             }
         }
 
-        async function actionRejectSuggestion(id) {
-            if(!confirm("Tolak dan hapus usulan ini?")) return;
-            const res = await callAPI('rejectSuggestion', { id: id }, false, "Menghapus Usulan...");
-            if (res) {
-                suggestionData = res;
-                renderSuggestions();
-                showCustomToast("Usulan telah ditolak.");
+        window.actionRejectSuggestion = async function(id) {
+            const confirmDelete = document.getElementById('status-message');
+            confirmDelete.innerHTML = `Tolak usulan ini? <button onclick="window.confirmRejectSuggestion('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Ya</button> <button onclick="window.showCustomToast('Batal menolak')" class="bg-slate-300 px-2 py-1 rounded ml-1">Batal</button>`;
+        }
+
+        window.confirmRejectSuggestion = async function(id) {
+            if (!currentUser) return;
+            window.showLoading("Menghapus Usulan...");
+            try {
+                const sugDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'suggestions', id);
+                await deleteDoc(sugDocRef);
+                
+                suggestionData = suggestionData.filter(s => s.id !== id);
+                window.renderSuggestions();
+                window.showCustomToast("Usulan telah ditolak.");
+            } catch (error) {
+                console.error(error);
+                window.showCustomToast("Gagal menolak usulan.");
+            } finally {
+                window.hideLoading();
             }
         }
 
         // --- FITUR IMPORT/EXPORT ---
-        function exportToPDF() {
-            showLoading("Menyiapkan PDF...");
+        window.exportToPDF = function() {
+            window.showLoading("Menyiapkan PDF...");
             setTimeout(() => {
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
@@ -930,12 +1068,12 @@
                 });
 
                 doc.save('Database_Kamus_Bahase_Kule.pdf');
-                hideLoading();
-                showCustomToast("PDF Berhasil Diunduh!");
+                window.hideLoading();
+                window.showCustomToast("PDF Berhasil Diunduh!");
             }, 500);
         }
 
-        function downloadExcelTemplate() {
+        window.downloadExcelTemplate = function() {
             const wsData = [
                 ["Kosa Kata", "Kategori", "Arti Kata", "Sinonim", "Antonim", "Contoh Kalimat", "Arti Contoh Kalimat"],
                 ["Jinggo", "Adjektiva (Kata Sifat)", "Sangat merah / Merah gelap", "-", "-", "Klambine werna jinggo", "Bajunya warna merah"]
@@ -946,11 +1084,11 @@
             XLSX.writeFile(wb, "Template_Kamus_Upload.xlsx");
         }
 
-        function handleExcelUploadAction(event) {
+        window.handleExcelUploadAction = function(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            showLoading("Memproses Excel...");
+            window.showLoading("Memproses Excel...");
             const reader = new FileReader();
             
             reader.onload = async function(e) {
@@ -962,45 +1100,51 @@
                     const rows = XLSX.utils.sheet_to_json(worksheet, {header: 1});
                     
                     if (rows.length > 1) {
-                        const newItems = [];
+                        let skippedCount = 0;
+                        let addedCount = 0;
+                        const wordsCol = collection(db, 'artifacts', appId, 'public', 'data', 'words');
+
                         for (let i = 1; i < rows.length; i++) {
                             if (rows[i] && rows[i][0]) {
-                                newItems.push({
-                                    word: rows[i][0] || '',
+                                const newWordStr = rows[i][0].toString();
+                                const wordKey = newWordStr.toLowerCase().trim();
+                                
+                                // Cek Duplikat di Data Lokal
+                                const isDuplicate = dictionaryData.some(d => d.word.toLowerCase().trim() === wordKey);
+                                
+                                if (isDuplicate) {
+                                    skippedCount++;
+                                    continue;
+                                }
+
+                                const payload = {
+                                    word: newWordStr,
                                     category: rows[i][1] || 'Istilah Khusus',
                                     meaning: rows[i][2] || '',
                                     synonym: rows[i][3] || '-',
                                     antonym: rows[i][4] || '-',
                                     example: rows[i][5] || '-',
                                     example_translation: rows[i][6] || '-'
-                                });
+                                };
+                                
+                                // Simpan ke Firestore
+                                const newDocRef = await addDoc(wordsCol, payload);
+                                dictionaryData.push({ id: newDocRef.id, ...payload });
+                                addedCount++;
                             }
                         }
                         
-                        // Kirim data batch (massal) ke server API
-                        const res = await callAPI('saveBulkWords', newItems, false, "Mengunggah Data ke Server...");
-                        if (res) {
-                            // Cek format respon baru (penanganan sukses bersyarat / skipped duplicate)
-                            if(res.success) {
-                                dictionaryData = res.data;
-                                renderAdminWords();
-                                renderWords();
-                                showCustomToast(res.msg); // Munculkan pesan "X ditambahkan. Y dilewati..."
-                            } else if(Array.isArray(res)) {
-                                // Fallback antisipasi jika format lama yang terpakai
-                                dictionaryData = res;
-                                renderAdminWords();
-                                renderWords();
-                                showCustomToast(`${newItems.length} kata berhasil diunggah!`);
-                            }
-                        }
+                        window.renderAdminWords();
+                        window.renderWords();
+                        window.showCustomToast(`${addedCount} kata ditambah. ${skippedCount > 0 ? skippedCount + ' duplikat dilewati.' : ''}`);
                     } else {
-                        hideLoading();
-                        showCustomToast("Data Excel kosong atau tidak valid.");
+                        window.showCustomToast("Data Excel kosong atau tidak valid.");
                     }
                 } catch (err) {
-                    hideLoading();
-                    showCustomToast("Gagal membaca Excel. Pastikan format sesuai template.");
+                    console.error(err);
+                    window.showCustomToast("Gagal membaca Excel. Pastikan format sesuai.");
+                } finally {
+                    window.hideLoading();
                 }
             };
             reader.readAsArrayBuffer(file);
