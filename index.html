@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id" class="light">
 <head>
+    <meta name="google-site-verification" content="YPQbmtNTvxa5WMkMf557lNJ5Uzv8UYHR5cNqw3UfOAQ" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KAMUS BAHASE KULE</title>
@@ -400,6 +401,21 @@
                     
                     <button type="submit" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md">Simpan Data</button>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Custom Confirm -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[100] hidden opacity-0 transition-opacity p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-sm shadow-2xl p-6 text-center transform scale-95 transition-transform">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/50 text-red-500 rounded-full mx-auto flex items-center justify-center mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white" id="confirmTitle">Konfirmasi Hapus</h3>
+            <p class="text-slate-500 dark:text-slate-400 mb-6" id="confirmMessage">Apakah Anda yakin?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="window.closeModal('confirmModal')" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold rounded-xl transition">Batal</button>
+                <button id="confirmBtn" class="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition shadow-md">Ya, Hapus</button>
             </div>
         </div>
     </div>
@@ -945,11 +961,25 @@
             }
         }
 
-        window.actionDeleteWord = async function(id) {
-            // Gunakan custom modal konfirmasi jika memungkinkan, tapi untuk kesederhanaan di contoh ini:
-            const confirmDelete = document.getElementById('status-message');
-            confirmDelete.innerHTML = `Yakin hapus? <button onclick="window.confirmDeleteWord('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Ya</button> <button onclick="window.showCustomToast('Batal menghapus')" class="bg-slate-300 px-2 py-1 rounded ml-1">Batal</button>`;
-            // Prevent auto hide
+        let pendingDeleteId = null;
+        let pendingActionType = null;
+
+        window.actionDeleteWord = function(id) {
+            pendingDeleteId = id;
+            pendingActionType = 'WORD';
+            document.getElementById('confirmTitle').innerText = 'Hapus Kosa Kata';
+            document.getElementById('confirmMessage').innerText = 'Apakah Anda yakin ingin menghapus kosa kata ini secara permanen dari database?';
+            document.getElementById('confirmBtn').onclick = window.executePendingDelete;
+            window.openModal('confirmModal');
+        }
+
+        window.executePendingDelete = function() {
+            window.closeModal('confirmModal');
+            if (pendingActionType === 'WORD') {
+                window.confirmDeleteWord(pendingDeleteId);
+            } else if (pendingActionType === 'SUGGESTION') {
+                window.confirmRejectSuggestion(pendingDeleteId);
+            }
         }
 
         window.confirmDeleteWord = async function(id) {
@@ -1020,9 +1050,13 @@
             }
         }
 
-        window.actionRejectSuggestion = async function(id) {
-            const confirmDelete = document.getElementById('status-message');
-            confirmDelete.innerHTML = `Tolak usulan ini? <button onclick="window.confirmRejectSuggestion('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Ya</button> <button onclick="window.showCustomToast('Batal menolak')" class="bg-slate-300 px-2 py-1 rounded ml-1">Batal</button>`;
+        window.actionRejectSuggestion = function(id) {
+            pendingDeleteId = id;
+            pendingActionType = 'SUGGESTION';
+            document.getElementById('confirmTitle').innerText = 'Tolak Usulan';
+            document.getElementById('confirmMessage').innerText = 'Apakah Anda yakin ingin menolak dan menghapus usulan ini?';
+            document.getElementById('confirmBtn').onclick = window.executePendingDelete;
+            window.openModal('confirmModal');
         }
 
         window.confirmRejectSuggestion = async function(id) {
